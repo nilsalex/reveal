@@ -27,9 +27,10 @@ interface Particle {
 interface BalloonGameProps {
   name: string;
   initialEntries: LeaderboardEntry[];
+  onExit: () => void;
 }
 
-export function BalloonGame({ name, initialEntries }: BalloonGameProps) {
+export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const balloonsRef = useRef<Balloon[]>([]);
   const particlesRef = useRef<Particle[]>([]);
@@ -280,6 +281,13 @@ export function BalloonGame({ name, initialEntries }: BalloonGameProps) {
       )}
 
       <div className="w-full max-w-sm mx-auto mb-2 flex items-center justify-between text-sm text-slate-600">
+        <button
+          type="button"
+          onClick={onExit}
+          className="text-slate-500 underline hover:text-slate-700"
+        >
+          ← Zurück
+        </button>
         <span>{popCount} / {BALLOON_COUNT}</span>
         {timerStarted && running && (
           <span>{(elapsedMs / 1000).toFixed(1)}s</span>

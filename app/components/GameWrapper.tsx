@@ -15,7 +15,7 @@ export function GameWrapper({ initialEntries }: GameWrapperProps) {
   return (
     <>
       {name ? (
-        <BalloonGame name={name} initialEntries={initialEntries} />
+        <BalloonGame name={name} initialEntries={initialEntries} onExit={() => setName(null)} />
       ) : (
         <NameEntry onStart={setName} />
       )}
