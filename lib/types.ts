@@ -1,37 +1,23 @@
 export type Gender = "boy" | "girl";
 
-export type Guess = Gender;
-
-export type ReelValue = Gender;
-
-export interface NonJackpotSpinResult {
-  jackpot: false;
-  reels: [ReelValue, ReelValue, ReelValue];
-}
-
-export interface JackpotSpinResult {
-  jackpot: true;
-  reels: [ReelValue, ReelValue, ReelValue];
-  revealedGender: Gender;
-  correct: boolean;
-}
-
-export type SpinResult = NonJackpotSpinResult | JackpotSpinResult;
-
-export interface SpinRequest {
-  name: string;
-  guess: Guess;
-}
-
-export type SpinError = "invalid_input" | "already_played" | "server_error";
-
 export interface LeaderboardEntry {
   name: string;
-  guess: Guess;
-  correct: boolean;
+  durationMs: number;
   timestamp: string; // ISO 8601
 }
 
-export interface LeaderboardResponse {
-  entries: LeaderboardEntry[];
+export type RevealResult =
+  | { revealedGender: Gender }
+  | { error: "already_played" };
+
+export interface Balloon {
+  id: number;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  radius: number;
+  color: string;
+  popped: boolean;
+  isReveal: boolean;
 }
