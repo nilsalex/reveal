@@ -1,33 +1,20 @@
 import type { Gender } from "./types";
 
 export const COPY = {
-  title: "Baby-Slotmaschine",
-  subtitle: "Rate das Baby-Geschlecht!",
+  title: "Baby-Ballons",
+  subtitle: "Ploppe die Ballons, um das Baby-Geschlecht zu enthüllen!",
   nameLabel: "Wie heißt du?",
   namePlaceholder: "Dein Name",
   startButton: "Los geht's",
-  boyLabel: "Junge",
-  girlLabel: "Mädchen",
-  spinButton: "Drehen!",
-  spinningButton: "Dreht...",
-  chooseCoin: "Wähle deine Münze:",
   leaderboardTitle: "Rangliste",
-  leaderboardEmpty: "Noch keine Gewinner. Viel Glück!",
-  retryButton: "Nochmal drehen",
-  alreadyPlayed: "Du hast bereits gewonnen — weiter geht's nicht!",
-  invalidInput: "Bitte gib deinen Namen ein und wähle eine Münze.",
+  leaderboardEmpty: "Noch niemand hat aufgedeckt. Viel Glück!",
+  alreadyPlayed: "Du hast bereits aufgedeckt — weiter geht's nicht!",
   serverError: "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
-  rankHeader: "Platz",
-  nameHeader: "Name",
-  guessHeader: "Tipp",
-  resultHeader: "Ergebnis",
-  timeHeader: "Zeitpunkt",
+  toLeaderboard: "Zur Rangliste",
   revealHeadline: (g: Gender) =>
     g === "boy" ? "Es ist ein Junge!" : "Es ist ein Mädchen!",
-  revealSubline: (guess: Gender, correct: boolean) => {
-    const guessed = guess === "boy" ? "Junge" : "Mädchen";
-    return `Du hast auf ${guessed} getippt — ${correct ? "richtig!" : "leider falsch."}`;
+  revealSubline: (durationMs: number) => {
+    const seconds = (durationMs / 1000).toFixed(1);
+    return `Deine Zeit: ${seconds}s`;
   },
-  toLeaderboard: "Zur Rangliste",
-  winnerSuffix: " Gewinner",
 } as const;
