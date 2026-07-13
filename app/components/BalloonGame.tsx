@@ -45,6 +45,7 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
   const [running, setRunning] = useState(true);
   const [timerStarted, setTimerStarted] = useState(false);
   const [reveal, setReveal] = useState<{ gender: Gender; durationMs: number } | null>(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [entries, setEntries] = useState<LeaderboardEntry[]>(initialEntries);
 
@@ -195,6 +196,7 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
     setRunning(true);
     setTimerStarted(false);
     setReveal(null);
+    setLoading(false);
   }, []);
 
   const handleTap = useCallback(
@@ -239,6 +241,7 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
         }
 
         setRunning(false);
+        setLoading(true);
 
         try {
           const result = await revealGender({ name, durationMs });
@@ -257,6 +260,8 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
             });
         } catch {
           setError(COPY.serverError);
+        } finally {
+          setLoading(false);
         }
       }
     },
@@ -265,6 +270,13 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
 
   return (
     <div className="flex flex-col items-center w-full">
+      {loading && (
+        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-pastel-cream/80 p-6 text-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-pastel-gold border-t-transparent" />
+          <p className="mt-4 text-lg text-slate-600">Aufdecke…</p>
+        </div>
+      )}
+
       {error && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-pastel-cream/95 p-6 text-center">
           <div>
