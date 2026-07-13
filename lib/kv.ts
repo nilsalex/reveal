@@ -42,9 +42,14 @@ export async function addEntry(entry: LeaderboardEntry): Promise<void> {
 
 export async function getEntries(): Promise<LeaderboardEntry[]> {
   if (hasKv()) {
-    const raw = (await kv.lrange(KEY, 0, -1)) as string[];
-    // lrange returns newest-first (we lpush); reverse for oldest-first
-    const parsed = raw.map((s) => JSON.parse(s) as LeaderboardEntry);
+    const raw = (await kv.lrange(KEY, 0, -1)) as unknown;
+    if (!raw || !Array.isArray(raw)) return [];
+    // Entries may come back as JSON strings or already-parsed objects
+    // depending on the KV provider; handle both.
+    const parsed = raw.map((item) =>
+      typeof item === "string" ? (JSON.parse(item) as LeaderboardEntry) : (item as LeaderboardEntry),
+    );
+    // lpush prepends (newest-first); reverse for oldest-first
     return parsed.reverse();
   }
   return [...memoryStore];
