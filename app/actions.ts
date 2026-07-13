@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { hasPlayed, addEntry, getEntries } from "@/lib/kv";
+import { getBestTime, addEntry, getEntries } from "@/lib/kv";
 import type { Gender, LeaderboardEntry, RevealResult } from "@/lib/types";
 
 function isValidName(n: unknown): n is string {
@@ -27,17 +27,16 @@ export async function revealGender(input: {
     throw new Error("REVEAL_GENDER env var missing or invalid");
   }
 
-  if (await hasPlayed(name)) {
-    return { error: "already_played" };
+  // Only record if this is a new best (or first time)
+  const best = await getBestTime(name);
+  if (best === null || durationMs < best) {
+    await addEntry({
+      name: name.trim(),
+      durationMs,
+      timestamp: new Date().toISOString(),
+    });
+    revalidatePath("/");
   }
-
-  await addEntry({
-    name: name.trim(),
-    durationMs,
-    timestamp: new Date().toISOString(),
-  });
-
-  revalidatePath("/");
 
   return { revealedGender: revealGender as Gender };
 }

@@ -8,7 +8,6 @@ export const COPY = {
   startButton: "Los geht's",
   leaderboardTitle: "Rangliste",
   leaderboardEmpty: "Noch niemand hat aufgedeckt. Viel Glück!",
-  alreadyPlayed: "Du hast bereits aufgedeckt — weiter geht's nicht!",
   serverError: "Etwas ist schiefgelaufen. Bitte versuche es erneut.",
   toLeaderboard: "Zur Rangliste",
   revealHeadline: (g: Gender) =>

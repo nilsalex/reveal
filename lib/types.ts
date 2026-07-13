@@ -6,9 +6,9 @@ export interface LeaderboardEntry {
   timestamp: string; // ISO 8601
 }
 
-export type RevealResult =
-  | { revealedGender: Gender }
-  | { error: "already_played" };
+export interface RevealResult {
+  revealedGender: Gender;
+}
 
 export interface Balloon {
   id: number;

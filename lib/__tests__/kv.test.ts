@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import {
-  hasPlayed,
+  getBestTime,
   addEntry,
   getEntries,
   __resetMemoryStore,
@@ -22,19 +22,26 @@ describe("in-memory KV fallback", () => {
     delete process.env.KV_REST_API_TOKEN;
   });
 
-  it("hasPlayed returns false for unknown name", async () => {
-    expect(await hasPlayed("Oma")).toBe(false);
+  it("getBestTime returns null for unknown name", async () => {
+    expect(await getBestTime("Oma")).toBeNull();
   });
 
-  it("hasPlayed returns true after addEntry", async () => {
-    await addEntry(entry("Oma"));
-    expect(await hasPlayed("Oma")).toBe(true);
+  it("getBestTime returns the duration after addEntry", async () => {
+    await addEntry(entry("Oma", 8000));
+    expect(await getBestTime("Oma")).toBe(8000);
   });
 
-  it("hasPlayed is case-insensitive on trimmed name", async () => {
-    await addEntry(entry("Oma"));
-    expect(await hasPlayed("  oma  ")).toBe(true);
-    expect(await hasPlayed("OMA")).toBe(true);
+  it("getBestTime returns the best (lowest) time across replays", async () => {
+    await addEntry(entry("Oma", 10000));
+    await addEntry(entry("Oma", 6000));
+    await addEntry(entry("Oma", 9000));
+    expect(await getBestTime("Oma")).toBe(6000);
+  });
+
+  it("getBestTime is case-insensitive on trimmed name", async () => {
+    await addEntry(entry("Oma", 7000));
+    expect(await getBestTime("  oma  ")).toBe(7000);
+    expect(await getBestTime("OMA")).toBe(7000);
   });
 
   it("getEntries returns entries sorted by durationMs ascending", async () => {
@@ -46,6 +53,17 @@ describe("in-memory KV fallback", () => {
     expect(list[0].name).toBe("Fast");
     expect(list[1].name).toBe("Medium");
     expect(list[2].name).toBe("Slow");
+  });
+
+  it("getEntries dedupes by name, keeping best time", async () => {
+    await addEntry(entry("Oma", 10000));
+    await addEntry(entry("Oma", 4000));
+    await addEntry(entry("Opa", 7000));
+    const list = await getEntries();
+    expect(list).toHaveLength(2);
+    expect(list[0].name).toBe("Oma");
+    expect(list[0].durationMs).toBe(4000);
+    expect(list[1].name).toBe("Opa");
   });
 
   it("getEntries returns a copy (not the internal array)", async () => {

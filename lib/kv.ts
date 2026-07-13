@@ -20,13 +20,12 @@ export function __resetMemoryStore(): void {
   memoryStore.length = 0;
 }
 
-export async function hasPlayed(name: string): Promise<boolean> {
+export async function getBestTime(name: string): Promise<number | null> {
   const needle = normalizeName(name);
-  if (hasKv()) {
-    const entries = await getEntries();
-    return entries.some((e) => normalizeName(e.name) === needle);
-  }
-  return memoryStore.some((e) => normalizeName(e.name) === needle);
+  const entries = await getEntries();
+  const matching = entries.filter((e) => normalizeName(e.name) === needle);
+  if (matching.length === 0) return null;
+  return Math.min(...matching.map((e) => e.durationMs));
 }
 
 export async function addEntry(entry: LeaderboardEntry): Promise<void> {
@@ -46,8 +45,20 @@ export async function getEntries(): Promise<LeaderboardEntry[]> {
         ? (JSON.parse(item) as LeaderboardEntry)
         : (item as LeaderboardEntry),
     );
-    // Sort by durationMs ascending (fastest first)
-    return parsed.sort((a, b) => a.durationMs - b.durationMs);
+    return dedupeAndSort(parsed);
   }
-  return [...memoryStore].sort((a, b) => a.durationMs - b.durationMs);
+  return dedupeAndSort([...memoryStore]);
+}
+
+function dedupeAndSort(entries: LeaderboardEntry[]): LeaderboardEntry[] {
+  // Keep only the best (lowest) durationMs per name
+  const bestByName = new Map<string, LeaderboardEntry>();
+  for (const e of entries) {
+    const key = normalizeName(e.name);
+    const existing = bestByName.get(key);
+    if (!existing || e.durationMs < existing.durationMs) {
+      bestByName.set(key, e);
+    }
+  }
+  return [...bestByName.values()].sort((a, b) => a.durationMs - b.durationMs);
 }

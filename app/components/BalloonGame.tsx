@@ -172,6 +172,22 @@ export function BalloonGame({ name, initialEntries }: BalloonGameProps) {
     }
   }, []);
 
+  const resetGame = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    balloonsRef.current = createBalloons(BALLOON_COUNT, canvas.clientWidth, canvas.clientHeight);
+    particlesRef.current = [];
+    popCountRef.current = 0;
+    revealAssignedRef.current = false;
+    startTimeRef.current = null;
+    endedRef.current = false;
+    setPopCount(0);
+    setElapsedMs(0);
+    setRunning(true);
+    setTimerStarted(false);
+    setReveal(null);
+  }, []);
+
   const handleTap = useCallback(
     async (clientX: number, clientY: number) => {
       if (endedRef.current) return;
@@ -217,19 +233,19 @@ export function BalloonGame({ name, initialEntries }: BalloonGameProps) {
 
         try {
           const result = await revealGender({ name, durationMs });
-          if ("error" in result) {
-            setError(COPY.alreadyPlayed);
-            return;
-          }
           setReveal({ gender: result.revealedGender, durationMs });
-          setEntries((prev) => {
-            const newEntry: LeaderboardEntry = {
-              name: name.trim(),
-              durationMs,
-              timestamp: new Date().toISOString(),
-            };
-            return [...prev, newEntry].sort((a, b) => a.durationMs - b.durationMs);
-          });
+            setEntries((prev) => {
+              const newEntry: LeaderboardEntry = {
+                name: name.trim(),
+                durationMs,
+                timestamp: new Date().toISOString(),
+              };
+              // Dedupe by name, keep best time
+              const filtered = prev.filter(
+                (e) => e.name.trim().toLowerCase() !== name.trim().toLowerCase(),
+              );
+              return [...filtered, newEntry].sort((a, b) => a.durationMs - b.durationMs);
+            });
         } catch {
           setError(COPY.serverError);
         }
@@ -277,8 +293,18 @@ export function BalloonGame({ name, initialEntries }: BalloonGameProps) {
         <RevealOverlay
           gender={reveal.gender}
           durationMs={reveal.durationMs}
-          onClose={() => setReveal(null)}
+          onClose={resetGame}
         />
+      )}
+
+      {!running && !reveal && (
+        <button
+          type="button"
+          onClick={resetGame}
+          className="mt-4 rounded-full bg-pastel-gold px-6 py-3 font-semibold text-white shadow-md transition hover:brightness-105"
+        >
+          Nochmal spielen
+        </button>
       )}
     </div>
   );
