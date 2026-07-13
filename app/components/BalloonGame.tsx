@@ -14,7 +14,7 @@ import {
 import { COPY } from "@/lib/german";
 import type { Balloon, Gender, LeaderboardEntry } from "@/lib/types";
 
-const BALLOON_COUNT = 30;
+const BALLOON_COUNT = 100;
 
 interface Particle {
   x: number;
