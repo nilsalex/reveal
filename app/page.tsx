@@ -10,7 +10,7 @@ export default async function Page() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-start px-4 py-8">
       <header className="mb-6 text-center">
-        <h1 className="text-4xl font-extrabold text-green-600">
+        <h1 className="text-4xl font-extrabold text-pastel-greenDeep">
           {COPY.title}
         </h1>
         <p className="mt-1 text-slate-600">{COPY.subtitle}</p>

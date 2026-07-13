@@ -15,6 +15,8 @@ const config: Config = {
           gold: "#E6B800",
           pinkDeep: "#FF9CB6",
           blueDeep: "#8FB8FF",
+          green: "#A5D6A7",
+          greenDeep: "#66BB6A",
         },
       },
       keyframes: {

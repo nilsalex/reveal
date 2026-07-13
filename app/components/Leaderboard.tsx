@@ -12,7 +12,7 @@ function formatDuration(ms: number): string {
 export function Leaderboard({ entries }: LeaderboardProps) {
   return (
     <section className="w-full max-w-sm mx-auto mt-6">
-      <h2 className="mb-2 text-center text-xl font-bold text-green-600">
+      <h2 className="mb-2 text-center text-xl font-bold text-pastel-greenDeep">
         {COPY.leaderboardTitle}
       </h2>
       {entries.length === 0 ? (
