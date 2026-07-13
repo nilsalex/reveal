@@ -1,10 +1,8 @@
 import { kv } from "@vercel/kv";
 import type { LeaderboardEntry } from "./types";
 
-const KEY = "jackpot_entries";
+const KEY = "reveal_entries";
 
-// Module-scoped in-memory fallback used in dev when KV env vars are absent.
-// Never active in production: callers route to real KV when env is set.
 const memoryStore: LeaderboardEntry[] = [];
 
 function hasKv(): boolean {
@@ -18,7 +16,6 @@ function normalizeName(name: string): string {
   return name.trim().toLowerCase();
 }
 
-// Test helper
 export function __resetMemoryStore(): void {
   memoryStore.length = 0;
 }
@@ -44,13 +41,13 @@ export async function getEntries(): Promise<LeaderboardEntry[]> {
   if (hasKv()) {
     const raw = (await kv.lrange(KEY, 0, -1)) as unknown;
     if (!raw || !Array.isArray(raw)) return [];
-    // Entries may come back as JSON strings or already-parsed objects
-    // depending on the KV provider; handle both.
     const parsed = raw.map((item) =>
-      typeof item === "string" ? (JSON.parse(item) as LeaderboardEntry) : (item as LeaderboardEntry),
+      typeof item === "string"
+        ? (JSON.parse(item) as LeaderboardEntry)
+        : (item as LeaderboardEntry),
     );
-    // lpush prepends (newest-first); reverse for oldest-first
-    return parsed.reverse();
+    // Sort by durationMs ascending (fastest first)
+    return parsed.sort((a, b) => a.durationMs - b.durationMs);
   }
-  return [...memoryStore];
+  return [...memoryStore].sort((a, b) => a.durationMs - b.durationMs);
 }

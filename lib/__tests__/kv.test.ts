@@ -7,11 +7,10 @@ import {
 } from "@/lib/kv";
 import type { LeaderboardEntry } from "@/lib/types";
 
-function entry(name: string, correct = true): LeaderboardEntry {
+function entry(name: string, durationMs = 5000): LeaderboardEntry {
   return {
     name,
-    guess: "boy",
-    correct,
+    durationMs,
     timestamp: new Date("2026-07-13T12:00:00Z").toISOString(),
   };
 }
@@ -19,7 +18,6 @@ function entry(name: string, correct = true): LeaderboardEntry {
 describe("in-memory KV fallback", () => {
   beforeEach(() => {
     __resetMemoryStore();
-    // force dev path by ensuring no KV env
     delete process.env.KV_REST_API_URL;
     delete process.env.KV_REST_API_TOKEN;
   });
@@ -39,13 +37,15 @@ describe("in-memory KV fallback", () => {
     expect(await hasPlayed("OMA")).toBe(true);
   });
 
-  it("getEntries returns entries in insertion order", async () => {
-    await addEntry(entry("Oma"));
-    await addEntry(entry("Opa", false));
+  it("getEntries returns entries sorted by durationMs ascending", async () => {
+    await addEntry(entry("Slow", 10000));
+    await addEntry(entry("Fast", 3000));
+    await addEntry(entry("Medium", 5000));
     const list = await getEntries();
-    expect(list).toHaveLength(2);
-    expect(list[0].name).toBe("Oma");
-    expect(list[1].name).toBe("Opa");
+    expect(list).toHaveLength(3);
+    expect(list[0].name).toBe("Fast");
+    expect(list[1].name).toBe("Medium");
+    expect(list[2].name).toBe("Slow");
   });
 
   it("getEntries returns a copy (not the internal array)", async () => {
