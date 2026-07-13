@@ -4,30 +4,36 @@ import { useEffect, useRef } from "react";
 import confetti from "canvas-confetti";
 import type { Gender } from "@/lib/types";
 
-const NEUTRAL_COLORS = ["#E6B800", "#FFF8F0", "#DDD"];
+const NEUTRAL_COLORS = ["#E6B800", "#FFF8F0", "#DDDDDD"];
 const GENDER_COLORS: Record<Gender, string[]> = {
-  boy: ["#BFD7FF", "#8FB8FF", "#E6B800"],
-  girl: ["#FFD1DC", "#FF9CB6", "#E6B800"],
+  boy: ["#BFD7FF", "#8FB8FF"],
+  girl: ["#FFD1DC", "#FF9CB6"],
 };
 
+const TOTAL_DURATION = 5000;
+const BLEND_START = 1500;
+const BLEND_END = 4500;
+
 /**
- * Fires confetti immediately with neutral colors, then blends to the
- * gender color when `gender` is provided. This masks server latency —
- * the user sees confetti right away, and it transitions to pink/blue
- * once the gender is known.
+ * Fires confetti for 5 seconds. Starts neutral gold, then gradually
+ * blends in the gender color between 1.5s and 4.5s. The `gender` prop
+ * can arrive at any point during the animation — it's stored in a ref
+ * and picked up by the animation loop.
  */
 export function Confetti({ gender }: { gender?: Gender }) {
-  const intervalRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
   const genderRef = useRef<Gender | null>(null);
+  const startRef = useRef<number>(0);
 
   useEffect(() => {
-    const end = Date.now() + 3500;
+    startRef.current = Date.now();
+    const end = startRef.current + TOTAL_DURATION;
 
     function frame() {
-      const colors =
-        genderRef.current !== null
-          ? blendColors(NEUTRAL_COLORS, GENDER_COLORS[genderRef.current])
-          : NEUTRAL_COLORS;
+      const now = Date.now();
+      const elapsed = now - startRef.current;
+      const colors = currentColors(elapsed, genderRef.current);
+
       confetti({
         particleCount: 5,
         angle: 60,
@@ -43,25 +49,25 @@ export function Confetti({ gender }: { gender?: Gender }) {
         colors,
       });
       confetti({
-        particleCount: 3,
+        particleCount: 4,
         angle: 90,
         spread: 100,
         origin: { y: 0.5 },
         colors,
       });
-      if (Date.now() < end) {
-        intervalRef.current = requestAnimationFrame(frame);
+
+      if (now < end) {
+        rafRef.current = requestAnimationFrame(frame);
       }
     }
 
     frame();
 
     return () => {
-      if (intervalRef.current) cancelAnimationFrame(intervalRef.current);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
   }, []);
 
-  // When gender arrives, switch colors
   useEffect(() => {
     if (gender) {
       genderRef.current = gender;
@@ -71,11 +77,25 @@ export function Confetti({ gender }: { gender?: Gender }) {
   return null;
 }
 
-function blendColors(
-  neutral: string[],
-  target: string[],
-): string[] {
-  // Once gender is set, return target colors mixed with some gold
-  // for a smooth visual transition
-  return [...target, "#E6B800"];
+function currentColors(elapsedMs: number, gender: Gender | null): string[] {
+  if (!gender || elapsedMs < BLEND_START) {
+    return NEUTRAL_COLORS;
+  }
+  if (elapsedMs >= BLEND_END) {
+    // Full gender color with gold accent
+    return [...GENDER_COLORS[gender], "#E6B800"];
+  }
+  // Blend: interpolate ratio of neutral vs gender colors
+  const progress = (elapsedMs - BLEND_START) / (BLEND_END - BLEND_START);
+  const genderCount = Math.round(progress * GENDER_COLORS[gender].length);
+  const neutralCount = GENDER_COLORS[gender].length - genderCount;
+  const picked: string[] = [];
+  for (let i = 0; i < neutralCount; i++) {
+    picked.push(NEUTRAL_COLORS[i % NEUTRAL_COLORS.length]);
+  }
+  for (let i = 0; i < genderCount; i++) {
+    picked.push(GENDER_COLORS[gender][i % GENDER_COLORS[gender].length]);
+  }
+  picked.push("#E6B800");
+  return picked;
 }

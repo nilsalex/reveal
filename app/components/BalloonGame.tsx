@@ -246,25 +246,36 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
         setRunning(false);
         setLoading(true);
 
+        // Start confetti immediately with neutral colors
+        const revealStartTime = Date.now();
+
         try {
           const result = await revealGender({ name, durationMs });
+          // Blend confetti to gender color (Confetti component picks this up)
           setConfettiGender(result.revealedGender);
-          setReveal({ gender: result.revealedGender, durationMs });
-            setEntries((prev) => {
-              const newEntry: LeaderboardEntry = {
-                name: name.trim(),
-                durationMs,
-                timestamp: new Date().toISOString(),
-              };
-              // Dedupe by name, keep best time
-              const filtered = prev.filter(
-                (e) => e.name.trim().toLowerCase() !== name.trim().toLowerCase(),
-              );
-              return [...filtered, newEntry].sort((a, b) => a.durationMs - b.durationMs);
-            });
+
+          // Update leaderboard
+          setEntries((prev) => {
+            const newEntry: LeaderboardEntry = {
+              name: name.trim(),
+              durationMs,
+              timestamp: new Date().toISOString(),
+            };
+            const filtered = prev.filter(
+              (e) => e.name.trim().toLowerCase() !== name.trim().toLowerCase(),
+            );
+            return [...filtered, newEntry].sort((a, b) => a.durationMs - b.durationMs);
+          });
+
+          // Enforce minimum 5-second suspense before showing text
+          const elapsed = Date.now() - revealStartTime;
+          const remaining = Math.max(0, 5000 - elapsed);
+          setTimeout(() => {
+            setReveal({ gender: result.revealedGender, durationMs });
+            setLoading(false);
+          }, remaining);
         } catch {
           setError(COPY.serverError);
-        } finally {
           setLoading(false);
         }
       }
@@ -279,9 +290,8 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
       )}
 
       {loading && (
-        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-pastel-cream/80 p-6 text-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-pastel-gold border-t-transparent" />
-          <p className="mt-4 text-lg text-slate-600">Aufdecke…</p>
+        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-pastel-cream/70 p-6 text-center">
+          <p className="text-2xl font-semibold text-slate-700 animate-pulse">Aufdecke…</p>
         </div>
       )}
 
