@@ -10,15 +10,15 @@ const GENDER_COLORS: Record<Gender, string[]> = {
   girl: ["#FFD1DC", "#FF9CB6"],
 };
 
-const TOTAL_DURATION = 5000;
-const BLEND_START = 1500;
-const BLEND_END = 4500;
+const TOTAL_DURATION = 10000;
+const BLEND_START = 500;
+const BLEND_END = 5000;
 
 /**
- * Fires confetti for 5 seconds. Starts neutral gold, then gradually
- * blends in the gender color between 1.5s and 4.5s. The `gender` prop
- * can arrive at any point during the animation — it's stored in a ref
- * and picked up by the animation loop.
+ * Fires confetti for 10 seconds. Starts neutral gold, gradually blends
+ * in the gender color from 0.5s to 5s, then full gender color for the
+ * remaining 5s. The `gender` prop can arrive at any point — it's stored
+ * in a ref and picked up by the animation loop.
  */
 export function Confetti({ gender }: { gender?: Gender }) {
   const rafRef = useRef<number | null>(null);
@@ -82,20 +82,20 @@ function currentColors(elapsedMs: number, gender: Gender | null): string[] {
     return NEUTRAL_COLORS;
   }
   if (elapsedMs >= BLEND_END) {
-    // Full gender color with gold accent
-    return [...GENDER_COLORS[gender], "#E6B800"];
+    // Full gender color — no more neutral
+    return [...GENDER_COLORS[gender], ...GENDER_COLORS[gender]];
   }
-  // Blend: interpolate ratio of neutral vs gender colors
+  // Blend: gradually replace neutral with gender colors
   const progress = (elapsedMs - BLEND_START) / (BLEND_END - BLEND_START);
-  const genderCount = Math.round(progress * GENDER_COLORS[gender].length);
-  const neutralCount = GENDER_COLORS[gender].length - genderCount;
+  const total = 5;
+  const genderCount = Math.round(progress * total);
   const picked: string[] = [];
-  for (let i = 0; i < neutralCount; i++) {
-    picked.push(NEUTRAL_COLORS[i % NEUTRAL_COLORS.length]);
+  for (let i = 0; i < total; i++) {
+    if (i < genderCount) {
+      picked.push(GENDER_COLORS[gender][i % GENDER_COLORS[gender].length]);
+    } else {
+      picked.push(NEUTRAL_COLORS[i % NEUTRAL_COLORS.length]);
+    }
   }
-  for (let i = 0; i < genderCount; i++) {
-    picked.push(GENDER_COLORS[gender][i % GENDER_COLORS[gender].length]);
-  }
-  picked.push("#E6B800");
   return picked;
 }

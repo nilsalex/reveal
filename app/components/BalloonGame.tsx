@@ -267,9 +267,9 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
             return [...filtered, newEntry].sort((a, b) => a.durationMs - b.durationMs);
           });
 
-          // Enforce minimum 5-second suspense before showing text
+          // Enforce minimum 10-second suspense: 5s blend + 5s full color
           const elapsed = Date.now() - revealStartTime;
-          const remaining = Math.max(0, 5000 - elapsed);
+          const remaining = Math.max(0, 10000 - elapsed);
           setTimeout(() => {
             setReveal({ gender: result.revealedGender, durationMs });
             setLoading(false);
@@ -287,12 +287,6 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
     <div className="flex flex-col items-center w-full">
       {(loading || reveal) && (
         <Confetti gender={confettiGender} />
-      )}
-
-      {loading && (
-        <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-pastel-cream/70 p-6 text-center">
-          <p className="text-2xl font-semibold text-slate-700 animate-pulse">Aufdecke…</p>
-        </div>
       )}
 
       {error && (
