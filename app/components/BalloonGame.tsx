@@ -269,7 +269,7 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
 
           // Enforce minimum 10-second suspense: 5s blend + 5s full color
           const elapsed = Date.now() - revealStartTime;
-          const remaining = Math.max(0, 10000 - elapsed);
+          const remaining = Math.max(0, 8000 - elapsed);
           setTimeout(() => {
             setReveal({ gender: result.revealedGender, durationMs });
             setLoading(false);
