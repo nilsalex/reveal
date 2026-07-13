@@ -11,7 +11,7 @@ import {
 } from "@/lib/kv";
 import type { Gender, LeaderboardEntry, RevealResult } from "@/lib/types";
 
-const ADMIN_PIN = process.env.ADMIN_PIN ?? "1101";
+const ADMIN_PIN = process.env.ADMIN_PIN;
 
 function isValidName(n: unknown): n is string {
   return typeof n === "string" && n.trim().length > 0 && n.trim().length <= 40;
@@ -22,14 +22,9 @@ function isValidDurationMs(n: unknown): n is number {
 }
 
 async function resolveGender(): Promise<Gender> {
-  // KV-stored gender takes precedence over env var
   const stored = await getStoredGender();
-  if (stored) return stored;
-
-  const envGender = process.env.REVEAL_GENDER;
-  if (envGender === "boy" || envGender === "girl") return envGender;
-
-  throw new Error("REVEAL_GENDER not set in KV or env");
+  if (stored !== null) return stored;
+  throw new Error("Gender not set. Set it via /admin.");
 }
 
 export async function revealGender(input: {
