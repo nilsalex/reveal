@@ -59,7 +59,7 @@ describe("hitTest", () => {
     id: number,
     x: number,
     y: number,
-    radius = 50,
+    radius = 30,
   ): Balloon {
     return {
       id,

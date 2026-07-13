@@ -1,6 +1,6 @@
 import type { Balloon } from "./types";
 
-const PASTEL_COLORS = ["#FFD1DC", "#BFD7FF", "#FFF8F0", "#E6B800"];
+const PASTEL_COLORS = ["#FFD1DC", "#BFD7FF", "#E6B800", "#FF9CB6", "#8FB8FF"];
 
 export function getRevealThreshold(total: number): number {
   return Math.ceil(total * 0.25);
@@ -13,13 +13,13 @@ export function createBalloons(
 ): Balloon[] {
   const balloons: Balloon[] = [];
   for (let i = 0; i < count; i++) {
-    const radius = 50 + Math.random() * 20;
+    const radius = 25 + Math.random() * 10;
     balloons.push({
       id: i,
       x: radius + Math.random() * (width - 2 * radius),
       y: radius + Math.random() * (height - 2 * radius),
       vx: (Math.random() - 0.5) * 0.5,
-      vy: -0.3 - Math.random() * 0.4,
+      vy: (Math.random() - 0.5) * 0.5,
       radius,
       color: PASTEL_COLORS[Math.floor(Math.random() * PASTEL_COLORS.length)],
       popped: false,

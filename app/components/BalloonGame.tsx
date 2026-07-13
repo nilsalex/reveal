@@ -82,12 +82,20 @@ export function BalloonGame({ name, initialEntries }: BalloonGameProps) {
         if (b.popped) continue;
         b.x += b.vx * dt * 0.06;
         b.y += b.vy * dt * 0.06;
-        if (b.y + b.radius < 0) {
-          b.y = ch + b.radius;
-          b.x = b.radius + Math.random() * (cw - 2 * b.radius);
-        }
-        if (b.x - b.radius < 0 || b.x + b.radius > cw) {
+        // Reflect off all boundaries
+        if (b.x - b.radius < 0) {
+          b.x = b.radius;
           b.vx *= -1;
+        } else if (b.x + b.radius > cw) {
+          b.x = cw - b.radius;
+          b.vx *= -1;
+        }
+        if (b.y - b.radius < 0) {
+          b.y = b.radius;
+          b.vy *= -1;
+        } else if (b.y + b.radius > ch) {
+          b.y = ch - b.radius;
+          b.vy *= -1;
         }
 
         ctx.beginPath();
@@ -101,22 +109,22 @@ export function BalloonGame({ name, initialEntries }: BalloonGameProps) {
           b.radius,
         );
         grad.addColorStop(0, "#ffffff");
-        grad.addColorStop(0.3, b.color);
+        grad.addColorStop(0.4, b.color);
         grad.addColorStop(1, b.color);
         ctx.fillStyle = grad;
         ctx.fill();
 
         ctx.beginPath();
-        ctx.moveTo(b.x - 5, b.y + b.radius);
-        ctx.lineTo(b.x + 5, b.y + b.radius);
-        ctx.lineTo(b.x, b.y + b.radius + 8);
+        ctx.moveTo(b.x - 3, b.y + b.radius);
+        ctx.lineTo(b.x + 3, b.y + b.radius);
+        ctx.lineTo(b.x, b.y + b.radius + 5);
         ctx.closePath();
         ctx.fillStyle = b.color;
         ctx.fill();
 
         ctx.beginPath();
-        ctx.moveTo(b.x, b.y + b.radius + 8);
-        ctx.lineTo(b.x, b.y + b.radius + 30);
+        ctx.moveTo(b.x, b.y + b.radius + 5);
+        ctx.lineTo(b.x, b.y + b.radius + 18);
         ctx.strokeStyle = "rgba(100,100,100,0.3)";
         ctx.lineWidth = 1;
         ctx.stroke();
