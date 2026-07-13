@@ -80,6 +80,7 @@ export default function Page() {
                 : "boy"
           }
           correct={jackpot.correct}
+          onClose={() => setJackpot(null)}
         />
       )}
     </main>

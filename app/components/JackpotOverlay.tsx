@@ -8,9 +8,10 @@ interface JackpotOverlayProps {
   gender: Gender;
   guess: Guess;
   correct: boolean;
+  onClose: () => void;
 }
 
-export function JackpotOverlay({ gender, guess, correct }: JackpotOverlayProps) {
+export function JackpotOverlay({ gender, guess, correct, onClose }: JackpotOverlayProps) {
   const accent = gender === "boy" ? "text-pastel-blueDeep" : "text-pastel-pinkDeep";
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-pastel-cream/95 p-6 text-center">
@@ -21,12 +22,13 @@ export function JackpotOverlay({ gender, guess, correct }: JackpotOverlayProps) 
       <p className="mt-3 text-lg text-slate-700">
         {COPY.revealSubline(guess, correct)}
       </p>
-      <a
-        href="#leaderboard"
+      <button
+        type="button"
+        onClick={onClose}
         className="mt-8 rounded-full bg-pastel-gold px-6 py-3 font-semibold text-white shadow-md transition hover:brightness-105"
       >
         {COPY.toLeaderboard}
-      </a>
+      </button>
     </div>
   );
 }
