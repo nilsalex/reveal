@@ -1,6 +1,6 @@
 import type { Balloon } from "./types";
 
-const PASTEL_COLORS = ["#FFD1DC", "#BFD7FF", "#E6B800", "#FF9CB6", "#8FB8FF"];
+const PASTEL_COLORS = ["#C8E6C9", "#A5D6A7", "#DCEDC8", "#E6B800", "#FFD54F"];
 
 export function getRevealThreshold(total: number): number {
   return Math.ceil(total * 0.25);
