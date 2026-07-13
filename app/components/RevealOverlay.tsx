@@ -1,6 +1,5 @@
 "use client";
 
-import { Confetti } from "./Confetti";
 import { COPY } from "@/lib/german";
 import type { Gender } from "@/lib/types";
 
@@ -14,7 +13,6 @@ export function RevealOverlay({ gender, durationMs, onClose }: RevealOverlayProp
   const accent = gender === "boy" ? "text-pastel-blueDeep" : "text-pastel-pinkDeep";
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-pastel-cream/95 p-6 text-center">
-      <Confetti gender={gender} />
       <h1 className={`text-4xl sm:text-5xl font-extrabold ${accent}`}>
         {COPY.revealHeadline(gender)}
       </h1>

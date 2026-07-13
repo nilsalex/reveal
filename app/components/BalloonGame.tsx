@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { revealGender } from "@/app/actions";
 import { RevealOverlay } from "./RevealOverlay";
+import { Confetti } from "./Confetti";
 import { Leaderboard } from "./Leaderboard";
 import {
   createBalloons,
@@ -45,6 +46,7 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
   const [running, setRunning] = useState(true);
   const [timerStarted, setTimerStarted] = useState(false);
   const [reveal, setReveal] = useState<{ gender: Gender; durationMs: number } | null>(null);
+  const [confettiGender, setConfettiGender] = useState<Gender | undefined>(undefined);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [entries, setEntries] = useState<LeaderboardEntry[]>(initialEntries);
@@ -197,6 +199,7 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
     setTimerStarted(false);
     setReveal(null);
     setLoading(false);
+    setConfettiGender(undefined);
   }, []);
 
   const handleTap = useCallback(
@@ -245,6 +248,7 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
 
         try {
           const result = await revealGender({ name, durationMs });
+          setConfettiGender(result.revealedGender);
           setReveal({ gender: result.revealedGender, durationMs });
             setEntries((prev) => {
               const newEntry: LeaderboardEntry = {
@@ -270,6 +274,10 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
 
   return (
     <div className="flex flex-col items-center w-full">
+      {(loading || reveal) && (
+        <Confetti gender={confettiGender} />
+      )}
+
       {loading && (
         <div className="fixed inset-0 z-40 flex flex-col items-center justify-center bg-pastel-cream/80 p-6 text-center">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-pastel-gold border-t-transparent" />
