@@ -1,8 +1,8 @@
 import type { Gender } from "./types";
 
 export const COPY = {
-  title: "Baby-Ballons",
-  subtitle: "Ploppe die Ballons, um das Baby-Geschlecht zu enthüllen!",
+  title: "Mädchen oder Junge?",
+  subtitle: "Finde es heraus!",
   nameLabel: "Wie heißt du?",
   namePlaceholder: "Dein Name",
   startButton: "Los geht's",
