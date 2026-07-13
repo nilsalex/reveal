@@ -254,23 +254,22 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
           // Blend confetti to gender color (Confetti component picks this up)
           setConfettiGender(result.revealedGender);
 
-          // Update leaderboard
-          setEntries((prev) => {
-            const newEntry: LeaderboardEntry = {
-              name: name.trim(),
-              durationMs,
-              timestamp: new Date().toISOString(),
-            };
-            const filtered = prev.filter(
-              (e) => e.name.trim().toLowerCase() !== name.trim().toLowerCase(),
-            );
-            return [...filtered, newEntry].sort((a, b) => a.durationMs - b.durationMs);
-          });
-
-          // Enforce minimum 10-second suspense: 5s blend + 5s full color
+          // Enforce minimum suspense before showing text
           const elapsed = Date.now() - revealStartTime;
           const remaining = Math.max(0, 8000 - elapsed);
           setTimeout(() => {
+            // Update leaderboard only when the reveal text is shown
+            setEntries((prev) => {
+              const newEntry: LeaderboardEntry = {
+                name: name.trim(),
+                durationMs,
+                timestamp: new Date().toISOString(),
+              };
+              const filtered = prev.filter(
+                (e) => e.name.trim().toLowerCase() !== name.trim().toLowerCase(),
+              );
+              return [...filtered, newEntry].sort((a, b) => a.durationMs - b.durationMs);
+            });
             setReveal({ gender: result.revealedGender, durationMs });
             setLoading(false);
           }, remaining);
