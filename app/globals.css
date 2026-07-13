@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #FFF8F0;
+}
+
+html, body {
+  background-color: var(--color-bg);
+  -webkit-tap-highlight-color: transparent;
+}
