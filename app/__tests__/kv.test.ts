@@ -1,0 +1,58 @@
+import { describe, it, expect, beforeEach } from "vitest";
+import {
+  hasPlayed,
+  addEntry,
+  getEntries,
+  __resetMemoryStore,
+} from "@/lib/kv";
+import type { LeaderboardEntry } from "@/lib/types";
+
+function entry(name: string, correct = true): LeaderboardEntry {
+  return {
+    name,
+    guess: "boy",
+    correct,
+    timestamp: new Date("2026-07-13T12:00:00Z").toISOString(),
+  };
+}
+
+describe("in-memory KV fallback", () => {
+  beforeEach(() => {
+    __resetMemoryStore();
+    // force dev path by ensuring no KV env
+    delete process.env.KV_REST_API_URL;
+    delete process.env.KV_REST_API_TOKEN;
+  });
+
+  it("hasPlayed returns false for unknown name", async () => {
+    expect(await hasPlayed("Oma")).toBe(false);
+  });
+
+  it("hasPlayed returns true after addEntry", async () => {
+    await addEntry(entry("Oma"));
+    expect(await hasPlayed("Oma")).toBe(true);
+  });
+
+  it("hasPlayed is case-insensitive on trimmed name", async () => {
+    await addEntry(entry("Oma"));
+    expect(await hasPlayed("  oma  ")).toBe(true);
+    expect(await hasPlayed("OMA")).toBe(true);
+  });
+
+  it("getEntries returns entries in insertion order", async () => {
+    await addEntry(entry("Oma"));
+    await addEntry(entry("Opa", false));
+    const list = await getEntries();
+    expect(list).toHaveLength(2);
+    expect(list[0].name).toBe("Oma");
+    expect(list[1].name).toBe("Opa");
+  });
+
+  it("getEntries returns a copy (not the internal array)", async () => {
+    await addEntry(entry("Oma"));
+    const a = await getEntries();
+    const b = await getEntries();
+    expect(a).not.toBe(b);
+    expect(a).toEqual(b);
+  });
+});
