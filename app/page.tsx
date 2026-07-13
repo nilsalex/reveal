@@ -2,6 +2,8 @@ import { GameWrapper } from "./components/GameWrapper";
 import { getLeaderboard } from "./actions";
 import { COPY } from "@/lib/german";
 
+export const dynamic = "force-dynamic";
+
 export default async function Page() {
   const entries = await getLeaderboard();
 
