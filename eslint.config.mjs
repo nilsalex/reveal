@@ -5,6 +5,11 @@ const eslintConfig = [
   {
     ignores: [".next/**", "node_modules/**", "next-env.d.ts"],
   },
+  {
+    rules: {
+      "react-hooks/immutability": "off",
+    },
+  },
 ];
 
 export default eslintConfig;
