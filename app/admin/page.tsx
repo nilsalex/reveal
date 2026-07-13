@@ -16,11 +16,11 @@ export default function AdminPage() {
     e.preventDefault();
     setError(null);
     try {
-      const gender = await adminGetGender();
+      const gender = await adminGetGender({ pin });
       setCurrentGender(gender);
       setAuthed(true);
     } catch {
-      setError("Fehler beim Laden.");
+      setError("Falsche PIN oder zu viele Versuche.");
     }
   }
 
