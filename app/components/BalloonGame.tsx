@@ -338,22 +338,13 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
       )}
 
       {!running && !reveal && (
-        <div className="mt-4 flex flex-col items-center gap-3">
-          <button
-            type="button"
-            onClick={resetGame}
-            className="rounded-full bg-pastel-gold px-6 py-3 font-semibold text-white shadow-md transition hover:brightness-105"
-          >
-            Nochmal spielen
-          </button>
-          <button
-            type="button"
-            onClick={onExit}
-            className="text-sm text-slate-500 underline hover:text-slate-700"
-          >
-            Anderer Spieler
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={resetGame}
+          className="mt-4 rounded-full bg-pastel-gold px-6 py-3 font-semibold text-white shadow-md transition hover:brightness-105"
+        >
+          Nochmal spielen
+        </button>
       )}
     </div>
   );
