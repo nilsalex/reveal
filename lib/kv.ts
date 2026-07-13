@@ -1,9 +1,11 @@
 import { kv } from "@vercel/kv";
-import type { LeaderboardEntry } from "./types";
+import type { Gender, LeaderboardEntry } from "./types";
 
 const KEY = "reveal_entries";
+const GENDER_KEY = "reveal_gender";
 
 const memoryStore: LeaderboardEntry[] = [];
+let memoryGender: Gender | null = null;
 
 function hasKv(): boolean {
   return (
@@ -18,6 +20,7 @@ function normalizeName(name: string): string {
 
 export function __resetMemoryStore(): void {
   memoryStore.length = 0;
+  memoryGender = null;
 }
 
 export async function getBestTime(name: string): Promise<number | null> {
@@ -50,8 +53,32 @@ export async function getEntries(): Promise<LeaderboardEntry[]> {
   return dedupeAndSort([...memoryStore]);
 }
 
+export async function clearEntries(): Promise<void> {
+  if (hasKv()) {
+    await kv.del(KEY);
+    return;
+  }
+  memoryStore.length = 0;
+}
+
+export async function getStoredGender(): Promise<Gender | null> {
+  if (hasKv()) {
+    const val = (await kv.get(GENDER_KEY)) as unknown;
+    if (val === "boy" || val === "girl") return val;
+    return null;
+  }
+  return memoryGender;
+}
+
+export async function setStoredGender(gender: Gender): Promise<void> {
+  if (hasKv()) {
+    await kv.set(GENDER_KEY, gender);
+    return;
+  }
+  memoryGender = gender;
+}
+
 function dedupeAndSort(entries: LeaderboardEntry[]): LeaderboardEntry[] {
-  // Keep only the best (lowest) durationMs per name
   const bestByName = new Map<string, LeaderboardEntry>();
   for (const e of entries) {
     const key = normalizeName(e.name);
