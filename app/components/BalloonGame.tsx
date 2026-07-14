@@ -382,7 +382,7 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
   );
 
   return (
-    <div className="flex flex-col items-center w-full">
+    <div className="flex flex-col items-center w-full select-none">
       {(loading || reveal) && (
         <Confetti gender={confettiGender} />
       )}
