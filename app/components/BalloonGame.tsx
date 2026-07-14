@@ -437,7 +437,7 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
         onPointerCancel={(e) => {
           handlePointerUp(e.clientX, e.clientY);
         }}
-        className="w-full max-w-sm mx-auto rounded-2xl border-2 border-pastel-gold/30 bg-white/50 h-[60vh] touch-none select-none"
+        className="w-full max-w-sm mx-auto rounded-2xl border-2 border-pastel-gold/30 bg-white/50 h-[60vh] touch-none"
       />
 
       <Leaderboard entries={entries} />
