@@ -63,18 +63,6 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    let pointerDownOnCanvas = false;
-    const blockSelect = (e: Event) => {
-      if (pointerDownOnCanvas) e.preventDefault();
-    };
-    const markDown = () => { pointerDownOnCanvas = true; };
-    const markUp = () => { pointerDownOnCanvas = false; };
-    document.addEventListener("selectstart", blockSelect);
-    canvas.addEventListener("touchstart", markDown, { passive: true });
-    canvas.addEventListener("pointerdown", markDown);
-    document.addEventListener("pointerup", markUp);
-    document.addEventListener("pointercancel", markUp);
-
     function resize() {
       if (!canvas) return;
       canvas.width = canvas.clientWidth * window.devicePixelRatio;
@@ -209,11 +197,6 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
     return () => {
       cancelAnimationFrame(animationRef.current);
       window.removeEventListener("resize", resize);
-      document.removeEventListener("selectstart", blockSelect);
-      canvas.removeEventListener("touchstart", markDown);
-      canvas.removeEventListener("pointerdown", markDown);
-      document.removeEventListener("pointerup", markUp);
-      document.removeEventListener("pointercancel", markUp);
     };
   }, []);
 
@@ -419,7 +402,7 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
         </div>
       )}
 
-      <div className="w-full max-w-sm mx-auto mb-2 grid grid-cols-3 items-center text-sm text-slate-600">
+      <div className="w-full max-w-sm mx-auto mb-2 grid grid-cols-3 items-center text-sm text-slate-600 select-none">
         <button
           type="button"
           onClick={onExit}
