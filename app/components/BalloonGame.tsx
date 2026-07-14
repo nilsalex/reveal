@@ -63,12 +63,16 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    const blockSelect = (e: Event) => e.preventDefault();
-    const suppressOnDown = () => document.addEventListener("selectstart", blockSelect);
-    const restoreOnUp = () => document.removeEventListener("selectstart", blockSelect);
-    canvas.addEventListener("pointerdown", suppressOnDown);
-    document.addEventListener("pointerup", restoreOnUp);
-    document.addEventListener("pointercancel", restoreOnUp);
+    let pointerDownOnCanvas = false;
+    const blockSelect = (e: Event) => {
+      if (pointerDownOnCanvas) e.preventDefault();
+    };
+    const markDown = () => { pointerDownOnCanvas = true; };
+    const markUp = () => { pointerDownOnCanvas = false; };
+    document.addEventListener("selectstart", blockSelect);
+    canvas.addEventListener("pointerdown", markDown);
+    document.addEventListener("pointerup", markUp);
+    document.addEventListener("pointercancel", markUp);
 
     function resize() {
       if (!canvas) return;
@@ -204,10 +208,10 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
     return () => {
       cancelAnimationFrame(animationRef.current);
       window.removeEventListener("resize", resize);
-      canvas.removeEventListener("pointerdown", suppressOnDown);
-      document.removeEventListener("pointerup", restoreOnUp);
-      document.removeEventListener("pointercancel", restoreOnUp);
       document.removeEventListener("selectstart", blockSelect);
+      canvas.removeEventListener("pointerdown", markDown);
+      document.removeEventListener("pointerup", markUp);
+      document.removeEventListener("pointercancel", markUp);
     };
   }, []);
 
