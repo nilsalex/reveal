@@ -18,8 +18,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-pastel-cream text-slate-800 antialiased">
         {children}
         <footer className="py-4 text-center text-xs text-slate-400">
-          {process.env.NEXT_PUBLIC_COMMIT_HASH} ·{" "}
-          {new Date(process.env.NEXT_PUBLIC_BUILD_TIME ?? "").toLocaleString("de-DE")}
+          {process.env.NEXT_PUBLIC_COMMIT_HASH} · {process.env.NEXT_PUBLIC_BUILD_TIME}
         </footer>
         <SpeedInsights />
         <Analytics />
