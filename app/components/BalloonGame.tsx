@@ -382,7 +382,7 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
   );
 
   return (
-    <div className="flex flex-col items-center w-full select-none">
+    <div className="flex flex-col items-center w-full">
       {(loading || reveal) && (
         <Confetti gender={confettiGender} />
       )}
@@ -419,6 +419,7 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
       <canvas
         ref={canvasRef}
         onPointerDown={(e) => {
+          if (e.detail >= 2) e.preventDefault();
           e.currentTarget.setPointerCapture(e.pointerId);
           handlePointerDown(e.clientX, e.clientY, e.pointerId);
         }}
@@ -431,7 +432,8 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
         onPointerCancel={(e) => {
           handlePointerUp(e.clientX, e.clientY);
         }}
-        className="w-full max-w-sm mx-auto rounded-2xl border-2 border-pastel-gold/30 bg-white/50 select-none"
+        onDoubleClick={(e) => e.preventDefault()}
+        className="w-full max-w-sm mx-auto rounded-2xl border-2 border-pastel-gold/30 bg-white/50"
         style={{ height: "60vh", touchAction: "none" }}
       />
 
