@@ -402,18 +402,18 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
         </div>
       )}
 
-      <div className="w-full max-w-sm mx-auto mb-2 flex items-center justify-between text-sm text-slate-600">
+      <div className="w-full max-w-sm mx-auto mb-2 grid grid-cols-3 items-center text-sm text-slate-600">
         <button
           type="button"
           onClick={onExit}
-          className="text-slate-500 underline hover:text-slate-700"
+          className="justify-self-start text-slate-500 underline hover:text-slate-700"
         >
           ← Zurück
         </button>
-        <span>{popCount} / {BALLOON_COUNT}</span>
-        {timerStarted && running && (
-          <span>{(elapsedMs / 1000).toFixed(1)}s</span>
-        )}
+        <span className="justify-self-center tabular-nums">{popCount} / {BALLOON_COUNT}</span>
+        <span className="justify-self-end tabular-nums">
+          {timerStarted && running ? `${(elapsedMs / 1000).toFixed(1)}s` : "\u00A0"}
+        </span>
       </div>
 
       <canvas
@@ -431,7 +431,7 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
         onPointerCancel={(e) => {
           handlePointerUp(e.clientX, e.clientY);
         }}
-        className="w-full max-w-sm mx-auto rounded-2xl border-2 border-pastel-gold/30 bg-white/50"
+        className="w-full max-w-sm mx-auto rounded-2xl border-2 border-pastel-gold/30 bg-white/50 select-none"
         style={{ height: "60vh", touchAction: "none" }}
       />
 
