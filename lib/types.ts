@@ -19,5 +19,4 @@ export interface Balloon {
   radius: number;
   color: string;
   popped: boolean;
-  isReveal: boolean;
 }

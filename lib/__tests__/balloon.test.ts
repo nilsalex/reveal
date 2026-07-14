@@ -1,20 +1,6 @@
 import { describe, it, expect, vi } from "vitest";
-import {
-  createBalloons,
-  hitTest,
-  assignReveal,
-  getRevealThreshold,
-} from "@/lib/balloon";
+import { createBalloons, hitTest } from "@/lib/balloon";
 import type { Balloon } from "@/lib/types";
-
-describe("getRevealThreshold", () => {
-  it("returns ceil(25% of total)", () => {
-    expect(getRevealThreshold(30)).toBe(8);
-    expect(getRevealThreshold(8)).toBe(2);
-    expect(getRevealThreshold(1)).toBe(1);
-    expect(getRevealThreshold(0)).toBe(0);
-  });
-});
 
 describe("createBalloons", () => {
   it("creates the requested count", () => {
@@ -45,13 +31,6 @@ describe("createBalloons", () => {
     }
     vi.unstubAllGlobals();
   });
-
-  it("sets isReveal to false for all", () => {
-    vi.stubGlobal("Math", { random: () => 0.5, floor: Math.floor, ceil: Math.ceil, sqrt: Math.sqrt });
-    const balloons = createBalloons(5, 400, 800);
-    expect(balloons.every((b) => !b.isReveal)).toBe(true);
-    vi.unstubAllGlobals();
-  });
 });
 
 describe("hitTest", () => {
@@ -68,9 +47,8 @@ describe("hitTest", () => {
       vx: 0,
       vy: -1,
       radius,
-      color: "#FFD1DC",
+      color: "#FFD1BC",
       popped: false,
-      isReveal: false,
     };
   }
 
@@ -98,49 +76,5 @@ describe("hitTest", () => {
     b.popped = true;
     const result = hitTest([b], 100, 100);
     expect(result).toBeNull();
-  });
-});
-
-describe("assignReveal", () => {
-  it("tags exactly one non-popped balloon as reveal", () => {
-    vi.stubGlobal("Math", { random: () => 0, floor: Math.floor, ceil: Math.ceil, sqrt: Math.sqrt });
-    const balloons: Balloon[] = [
-      { id: 1, x: 0, y: 0, vx: 0, vy: 0, radius: 50, color: "#fff", popped: false, isReveal: false },
-      { id: 2, x: 0, y: 0, vx: 0, vy: 0, radius: 50, color: "#fff", popped: false, isReveal: false },
-      { id: 3, x: 0, y: 0, vx: 0, vy: 0, radius: 50, color: "#fff", popped: false, isReveal: false },
-    ];
-    const result = assignReveal(balloons);
-    const tagged = result.filter((b) => b.isReveal);
-    expect(tagged).toHaveLength(1);
-    vi.unstubAllGlobals();
-  });
-
-  it("does not tag popped balloons", () => {
-    vi.stubGlobal("Math", { random: () => 0, floor: Math.floor, ceil: Math.ceil, sqrt: Math.sqrt });
-    const balloons: Balloon[] = [
-      { id: 1, x: 0, y: 0, vx: 0, vy: 0, radius: 50, color: "#fff", popped: true, isReveal: false },
-      { id: 2, x: 0, y: 0, vx: 0, vy: 0, radius: 50, color: "#fff", popped: false, isReveal: false },
-    ];
-    const result = assignReveal(balloons);
-    expect(result[0].isReveal).toBe(false);
-    expect(result[1].isReveal).toBe(true);
-    vi.unstubAllGlobals();
-  });
-
-  it("returns a new array (does not mutate input)", () => {
-    vi.stubGlobal("Math", { random: () => 0, floor: Math.floor, ceil: Math.ceil, sqrt: Math.sqrt });
-    const balloons: Balloon[] = [
-      { id: 1, x: 0, y: 0, vx: 0, vy: 0, radius: 50, color: "#fff", popped: false, isReveal: false },
-    ];
-    const result = assignReveal(balloons);
-    expect(balloons[0].isReveal).toBe(false);
-    expect(result).not.toBe(balloons);
-    expect(result[0].isReveal).toBe(true);
-    vi.unstubAllGlobals();
-  });
-
-  it("handles empty array gracefully", () => {
-    const result = assignReveal([]);
-    expect(result).toEqual([]);
   });
 });

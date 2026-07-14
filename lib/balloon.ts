@@ -2,10 +2,6 @@ import type { Balloon } from "./types";
 
 const PASTEL_COLORS = ["#C8E6C9", "#A5D6A7", "#DCEDC8", "#E6B800", "#FFD54F"];
 
-export function getRevealThreshold(total: number): number {
-  return Math.ceil(total * 0.25);
-}
-
 export function createBalloons(
   count: number,
   width: number,
@@ -23,7 +19,6 @@ export function createBalloons(
       radius,
       color: PASTEL_COLORS[Math.floor(Math.random() * PASTEL_COLORS.length)],
       popped: false,
-      isReveal: false,
     });
   }
   return balloons;
@@ -44,13 +39,4 @@ export function hitTest(
     }
   }
   return null;
-}
-
-export function assignReveal(balloons: Balloon[]): Balloon[] {
-  const candidates = balloons.filter((b) => !b.popped);
-  if (candidates.length === 0) return [...balloons];
-  const winner = candidates[Math.floor(Math.random() * candidates.length)];
-  return balloons.map((b) =>
-    b.id === winner.id ? { ...b, isReveal: true } : b,
-  );
 }

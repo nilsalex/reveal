@@ -8,8 +8,6 @@ import { Leaderboard } from "./Leaderboard";
 import {
   createBalloons,
   hitTest,
-  assignReveal,
-  getRevealThreshold,
 } from "@/lib/balloon";
 import { COPY } from "@/lib/german";
 import type { Balloon, Gender, LeaderboardEntry } from "@/lib/types";
@@ -37,9 +35,17 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
   const particlesRef = useRef<Particle[]>([]);
   const animationRef = useRef<number>(0);
   const popCountRef = useRef(0);
-  const revealAssignedRef = useRef(false);
   const startTimeRef = useRef<number | null>(null);
   const endedRef = useRef(false);
+  const dragRef = useRef<{
+    id: number;
+    pointerId: number;
+    startX: number;
+    startY: number;
+    offsetX: number;
+    offsetY: number;
+    moved: boolean;
+  } | null>(null);
 
   const [popCount, setPopCount] = useState(0);
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -82,8 +88,52 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
 
       ctx.clearRect(0, 0, cw, ch);
 
+      const dragId = dragRef.current?.moved ? dragRef.current.id : -1;
+
+      function drawBalloon(b: Balloon, glow: boolean) {
+        if (!ctx) return;
+        const r = glow ? b.radius * 1.08 : b.radius;
+        if (glow) {
+          ctx.save();
+          ctx.shadowColor = b.color;
+          ctx.shadowBlur = 20;
+        }
+        ctx.beginPath();
+        ctx.arc(b.x, b.y, r, 0, Math.PI * 2);
+        const grad = ctx.createRadialGradient(
+          b.x - r * 0.3,
+          b.y - r * 0.3,
+          r * 0.1,
+          b.x,
+          b.y,
+          r,
+        );
+        grad.addColorStop(0, "#ffffff");
+        grad.addColorStop(0.4, b.color);
+        grad.addColorStop(1, b.color);
+        ctx.fillStyle = grad;
+        ctx.fill();
+        if (glow) ctx.restore();
+
+        ctx.beginPath();
+        ctx.moveTo(b.x - 3, b.y + r);
+        ctx.lineTo(b.x + 3, b.y + r);
+        ctx.lineTo(b.x, b.y + r + 5);
+        ctx.closePath();
+        ctx.fillStyle = b.color;
+        ctx.fill();
+
+        ctx.beginPath();
+        ctx.moveTo(b.x, b.y + r + 5);
+        ctx.lineTo(b.x, b.y + r + 18);
+        ctx.strokeStyle = "rgba(100,100,100,0.3)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
+
       for (const b of balloonsRef.current) {
         if (b.popped) continue;
+        if (b.id === dragId) continue; // draw dragged balloon last
         b.x += b.vx * dt * 0.06;
         b.y += b.vy * dt * 0.06;
         // Reflect off all boundaries
@@ -102,36 +152,18 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
           b.vy *= -1;
         }
 
-        ctx.beginPath();
-        ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
-        const grad = ctx.createRadialGradient(
-          b.x - b.radius * 0.3,
-          b.y - b.radius * 0.3,
-          b.radius * 0.1,
-          b.x,
-          b.y,
-          b.radius,
-        );
-        grad.addColorStop(0, "#ffffff");
-        grad.addColorStop(0.4, b.color);
-        grad.addColorStop(1, b.color);
-        ctx.fillStyle = grad;
-        ctx.fill();
+        drawBalloon(b, false);
+      }
 
-        ctx.beginPath();
-        ctx.moveTo(b.x - 3, b.y + b.radius);
-        ctx.lineTo(b.x + 3, b.y + b.radius);
-        ctx.lineTo(b.x, b.y + b.radius + 5);
-        ctx.closePath();
-        ctx.fillStyle = b.color;
-        ctx.fill();
-
-        ctx.beginPath();
-        ctx.moveTo(b.x, b.y + b.radius + 5);
-        ctx.lineTo(b.x, b.y + b.radius + 18);
-        ctx.strokeStyle = "rgba(100,100,100,0.3)";
-        ctx.lineWidth = 1;
-        ctx.stroke();
+      // Draw dragged balloon on top with glow
+      if (dragId >= 0) {
+        const dragged = balloonsRef.current.find((b) => b.id === dragId);
+        if (dragged && !dragged.popped) {
+          // Clamp to canvas while dragging
+          dragged.x = Math.max(dragged.radius, Math.min(cw - dragged.radius, dragged.x));
+          dragged.y = Math.max(dragged.radius, Math.min(ch - dragged.radius, dragged.y));
+          drawBalloon(dragged, true);
+        }
       }
 
       const particles = particlesRef.current;
@@ -190,7 +222,6 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
     balloonsRef.current = createBalloons(BALLOON_COUNT, canvas.clientWidth, canvas.clientHeight);
     particlesRef.current = [];
     popCountRef.current = 0;
-    revealAssignedRef.current = false;
     startTimeRef.current = null;
     endedRef.current = false;
     setPopCount(0);
@@ -202,17 +233,9 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
     setConfettiGender(undefined);
   }, []);
 
-  const handleTap = useCallback(
-    async (clientX: number, clientY: number) => {
+  const popBalloon = useCallback(
+    async (balloon: Balloon) => {
       if (endedRef.current) return;
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const rect = canvas.getBoundingClientRect();
-      const x = clientX - rect.left;
-      const y = clientY - rect.top;
-
-      const balloon = hitTest(balloonsRef.current, x, y);
-      if (!balloon) return;
 
       if (startTimeRef.current === null) {
         startTimeRef.current = performance.now();
@@ -224,13 +247,7 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
       popCountRef.current += 1;
       setPopCount(popCountRef.current);
 
-      const threshold = getRevealThreshold(BALLOON_COUNT);
-      if (!revealAssignedRef.current && popCountRef.current >= threshold) {
-        balloonsRef.current = assignReveal(balloonsRef.current);
-        revealAssignedRef.current = true;
-      }
-
-      if (balloon.isReveal) {
+      if (popCountRef.current >= BALLOON_COUNT) {
         endedRef.current = true;
         const durationMs = startTimeRef.current
           ? performance.now() - startTimeRef.current
@@ -282,6 +299,88 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
     [name, spawnParticles],
   );
 
+  const handlePointerDown = useCallback(
+    (clientX: number, clientY: number, pointerId: number) => {
+      if (endedRef.current) return;
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+
+      const balloon = hitTest(balloonsRef.current, x, y);
+      if (!balloon) return;
+
+      dragRef.current = {
+        id: balloon.id,
+        pointerId,
+        startX: x,
+        startY: y,
+        offsetX: x - balloon.x,
+        offsetY: y - balloon.y,
+        moved: false,
+      };
+    },
+    [],
+  );
+
+  const handlePointerMove = useCallback((clientX: number, clientY: number) => {
+    const drag = dragRef.current;
+    if (!drag) return;
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
+
+    const dx = x - drag.startX;
+    const dy = y - drag.startY;
+    if (!drag.moved && dx * dx + dy * dy > 25) {
+      drag.moved = true;
+    }
+    if (drag.moved) {
+      const balloon = balloonsRef.current.find((b) => b.id === drag.id);
+      if (balloon && !balloon.popped) {
+        balloon.x = x - drag.offsetX;
+        balloon.y = y - drag.offsetY;
+        balloon.vx = 0;
+        balloon.vy = 0;
+      }
+    }
+  }, []);
+
+  const handlePointerUp = useCallback(
+    (clientX: number, clientY: number) => {
+      const drag = dragRef.current;
+      if (!drag) return;
+      dragRef.current = null;
+
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const rect = canvas.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const y = clientY - rect.top;
+
+      if (!drag.moved) {
+        // Treat as tap: pop the balloon under the pointer (or the original)
+        const balloon =
+          hitTest(balloonsRef.current, x, y) ??
+          balloonsRef.current.find((b) => b.id === drag.id);
+        if (balloon && !balloon.popped) {
+          void popBalloon(balloon);
+        }
+      } else {
+        // Released after drag: give it a gentle nudge
+        const balloon = balloonsRef.current.find((b) => b.id === drag.id);
+        if (balloon && !balloon.popped) {
+          balloon.vx = (Math.random() - 0.5) * 0.5;
+          balloon.vy = (Math.random() - 0.5) * 0.5;
+        }
+      }
+    },
+    [popBalloon],
+  );
+
   return (
     <div className="flex flex-col items-center w-full">
       {(loading || reveal) && (
@@ -320,7 +419,17 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
       <canvas
         ref={canvasRef}
         onPointerDown={(e) => {
-          handleTap(e.clientX, e.clientY);
+          e.currentTarget.setPointerCapture(e.pointerId);
+          handlePointerDown(e.clientX, e.clientY, e.pointerId);
+        }}
+        onPointerMove={(e) => {
+          handlePointerMove(e.clientX, e.clientY);
+        }}
+        onPointerUp={(e) => {
+          handlePointerUp(e.clientX, e.clientY);
+        }}
+        onPointerCancel={(e) => {
+          handlePointerUp(e.clientX, e.clientY);
         }}
         className="w-full max-w-sm mx-auto rounded-2xl border-2 border-pastel-gold/30 bg-white/50"
         style={{ height: "60vh", touchAction: "none" }}
