@@ -1,4 +1,4 @@
-import { kv } from "@vercel/kv";
+import { Redis } from "@upstash/redis";
 import type { Gender, LeaderboardEntry } from "./types";
 
 const KEY = "reveal_entries";
@@ -7,11 +7,22 @@ const GENDER_KEY = "reveal_gender";
 const memoryStore: LeaderboardEntry[] = [];
 let memoryGender: Gender | null = null;
 
-function hasKv(): boolean {
+function hasRedis(): boolean {
   return (
     process.env.NODE_ENV === "production" ||
     (!!process.env.KV_REST_API_URL && !!process.env.KV_REST_API_TOKEN)
   );
+}
+
+let redis: Redis | null = null;
+function getRedis(): Redis {
+  if (!redis) {
+    redis = new Redis({
+      url: process.env.KV_REST_API_URL!,
+      token: process.env.KV_REST_API_TOKEN!,
+    });
+  }
+  return redis;
 }
 
 function normalizeName(name: string): string {
@@ -32,16 +43,16 @@ export async function getBestTime(name: string): Promise<number | null> {
 }
 
 export async function addEntry(entry: LeaderboardEntry): Promise<void> {
-  if (hasKv()) {
-    await kv.lpush(KEY, JSON.stringify(entry));
+  if (hasRedis()) {
+    await getRedis().lpush(KEY, JSON.stringify(entry));
     return;
   }
   memoryStore.push(entry);
 }
 
 export async function getEntries(): Promise<LeaderboardEntry[]> {
-  if (hasKv()) {
-    const raw = (await kv.lrange(KEY, 0, -1)) as unknown;
+  if (hasRedis()) {
+    const raw = (await getRedis().lrange(KEY, 0, -1)) as unknown;
     if (!raw || !Array.isArray(raw)) return [];
     const parsed = raw.map((item) =>
       typeof item === "string"
@@ -54,16 +65,16 @@ export async function getEntries(): Promise<LeaderboardEntry[]> {
 }
 
 export async function clearEntries(): Promise<void> {
-  if (hasKv()) {
-    await kv.del(KEY);
+  if (hasRedis()) {
+    await getRedis().del(KEY);
     return;
   }
   memoryStore.length = 0;
 }
 
 export async function getStoredGender(): Promise<Gender | null> {
-  if (hasKv()) {
-    const val = (await kv.get(GENDER_KEY)) as unknown;
+  if (hasRedis()) {
+    const val = (await getRedis().get(GENDER_KEY)) as unknown;
     if (val === "boy" || val === "girl") return val;
     return null;
   }
@@ -71,8 +82,8 @@ export async function getStoredGender(): Promise<Gender | null> {
 }
 
 export async function setStoredGender(gender: Gender): Promise<void> {
-  if (hasKv()) {
-    await kv.set(GENDER_KEY, gender);
+  if (hasRedis()) {
+    await getRedis().set(GENDER_KEY, gender);
     return;
   }
   memoryGender = gender;
