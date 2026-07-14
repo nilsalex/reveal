@@ -60,6 +60,7 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    canvas.onselectstart = () => false;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
@@ -419,7 +420,6 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
       <canvas
         ref={canvasRef}
         onPointerDown={(e) => {
-          if (e.detail >= 2) e.preventDefault();
           e.currentTarget.setPointerCapture(e.pointerId);
           handlePointerDown(e.clientX, e.clientY, e.pointerId);
         }}
@@ -432,7 +432,6 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
         onPointerCancel={(e) => {
           handlePointerUp(e.clientX, e.clientY);
         }}
-        onDoubleClick={(e) => e.preventDefault()}
         className="w-full max-w-sm mx-auto rounded-2xl border-2 border-pastel-gold/30 bg-white/50"
         style={{ height: "60vh", touchAction: "none" }}
       />
