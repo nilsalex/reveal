@@ -4,8 +4,8 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Baby-Slotmaschine",
-  description: "Rate das Baby-Geschlecht!",
+  title: "Mädchen oder Junge?",
+  description: "Finde es heraus!",
 };
 
 export default function RootLayout({
