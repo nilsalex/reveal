@@ -70,6 +70,7 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
     const markDown = () => { pointerDownOnCanvas = true; };
     const markUp = () => { pointerDownOnCanvas = false; };
     document.addEventListener("selectstart", blockSelect);
+    canvas.addEventListener("touchstart", markDown, { passive: true });
     canvas.addEventListener("pointerdown", markDown);
     document.addEventListener("pointerup", markUp);
     document.addEventListener("pointercancel", markUp);
@@ -209,6 +210,7 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
       cancelAnimationFrame(animationRef.current);
       window.removeEventListener("resize", resize);
       document.removeEventListener("selectstart", blockSelect);
+      canvas.removeEventListener("touchstart", markDown);
       canvas.removeEventListener("pointerdown", markDown);
       document.removeEventListener("pointerup", markUp);
       document.removeEventListener("pointercancel", markUp);
