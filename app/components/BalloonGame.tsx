@@ -63,6 +63,10 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
+    const preventDefault = (e: TouchEvent) => e.preventDefault();
+    canvas.addEventListener("touchstart", preventDefault, { passive: false });
+    canvas.addEventListener("touchmove", preventDefault, { passive: false });
+
     function resize() {
       if (!canvas) return;
       canvas.width = canvas.clientWidth * window.devicePixelRatio;
@@ -197,6 +201,8 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
     return () => {
       cancelAnimationFrame(animationRef.current);
       window.removeEventListener("resize", resize);
+      canvas.removeEventListener("touchstart", preventDefault);
+      canvas.removeEventListener("touchmove", preventDefault);
     };
   }, []);
 
@@ -402,7 +408,7 @@ export function BalloonGame({ name, initialEntries, onExit }: BalloonGameProps) 
         </div>
       )}
 
-      <div className="w-full max-w-sm mx-auto mb-2 grid grid-cols-3 items-center text-sm text-slate-600 select-none">
+      <div className="w-full max-w-sm mx-auto mb-2 grid grid-cols-3 items-center text-sm text-slate-600">
         <button
           type="button"
           onClick={onExit}
